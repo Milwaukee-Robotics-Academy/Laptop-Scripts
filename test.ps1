@@ -2,8 +2,6 @@
 
 Write-Host "Starting System Reset and Configuration..." -ForegroundColor Cyan
 
-
-
 # Remove Unwanted Apps (via Winget)
     . "$PSScriptRoot\remove-unwanted-apps.ps1"
 

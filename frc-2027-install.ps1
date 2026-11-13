@@ -1,4 +1,6 @@
 # Run as Administrator on Windows 11
+#Requires -RunAsAdministrator
+
 $ErrorActionPreference = "Stop"
 $InstallerDir = "C:\FRC_2027_Installers"
 

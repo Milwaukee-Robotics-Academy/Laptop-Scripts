@@ -1,3 +1,4 @@
+#Requires -RunAsAdministrator
 
 Write-Host "=== 1. Installing CSA Diagnostic, Git & Java Utilities via WinGet ===" -ForegroundColor Cyan
 $WingetApps = @(

@@ -1,3 +1,5 @@
+#Requires -RunAsAdministrator
+
 # 1. Remove Modern / Preinstalled OEM Office & Default Microsoft Store Apps (Appx)
 Write-Host "Removing preinstalled Microsoft Store (Appx) apps..." -ForegroundColor Cyan
 $AppxPatterns = @(
