@@ -2,14 +2,8 @@
 
 Write-Host "Starting System Reset and Configuration..." -ForegroundColor Cyan
 
-# 2. Clear Windows Credential Manager for GitHub
-# Retrieve all stored credentials, filter for GitHub entries, and delete them
-cmdkey.exe /list | Select-String -Pattern "Target:.*github" | ForEach-Object {
-    $target = ($_ -replace "^\s*Target:\s*", "").Trim()
-    Write-Host "Removing credential: $target" -ForegroundColor Yellow
-    cmdkey.exe /delete:$target
-}
-
+# Clear Windows Credential Manager for GitHub
+. "$PSScriptRoot\clear-github-creds.ps1"
 # Reset Network Stack & Saved Wi-Fi Profiles
 . "$PSScriptRoot\network-dhcp.ps1"
 . "$PSScriptRoot\wifi-setup.ps1"
