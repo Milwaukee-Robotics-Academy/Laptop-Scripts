@@ -1,5 +1,4 @@
-#Requires -RunAsAdministrator
-
+Write-Host "Setting up Wi-Fi..." -ForegroundColor Cyan
 $defaultSSID = 'Doublee'
 $defaultPassword = '1010101010'
 

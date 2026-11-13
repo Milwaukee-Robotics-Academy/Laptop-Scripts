@@ -1,5 +1,3 @@
-#Requires -RunAsAdministrator
-
 Write-Host "=== 1. Installing CSA Diagnostic, Git & Java Utilities via WinGet ===" -ForegroundColor Cyan
 $WingetApps = @(
     "WiresharkFoundation.Wireshark",  # Packet capture for FMS/radio/Systemcore debugging

@@ -1,5 +1,3 @@
-#Requires -RunAsAdministrator
-
 # Close Notepad++ if running so it does not overwrite config.xml on exit
 Get-Process -Name "notepad++" -ErrorAction SilentlyContinue | Stop-Process -Force
 
