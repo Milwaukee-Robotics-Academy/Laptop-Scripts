@@ -9,3 +9,5 @@ netsh winsock reset
 netsh int ip reset
 # Re-enable DHCP on standard Wi-Fi/Ethernet adapters if static IPs were set
 Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Set-NetIPInterface -Dhcp Enabled
+
+Write-Host "DHCP re-enabled on all active adapters." -ForegroundColor Green
