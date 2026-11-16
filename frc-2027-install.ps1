@@ -2,12 +2,12 @@
 #Requires -RunAsAdministrator
 
 $ErrorActionPreference = "Stop"
-$InstallerDir = "C:\FRC_2027_Installers"
+$InstallerDir = "C:\FRC_2027_Downloads"
 
 # Install base apps
 . "$PSScriptRoot\install-base-apps.ps1"
 
-Write-Host "`n=== 2. Running 2027 WPILib & Local FRC Installers ===" -ForegroundColor Cyan
+Write-Host "`n=== Running 2027 WPILib & Local FRC Installers ===" -ForegroundColor Cyan
 if (-Not (Test-Path $InstallerDir)) {
     Write-Warning "Directory $InstallerDir does not exist. Create it and add your 2027 installers first."
     exit
@@ -41,9 +41,9 @@ foreach ($File in $LocalInstallers) {
 }
 
 # Set Angry IP Scanner default settings
-. "$PSSrciptRoot\angry-ip-scanner-default-settings.ps1"
+. "$PSScriptRoot\angry-ip-scanner-default-settings.ps1"
 
-Write-Host "`n=== 3. Configuring Windows Networking & Firewall for FRC ===" -ForegroundColor Cyan
+Write-Host "`n=== Configuring Windows Networking & Firewall for FRC ===" -ForegroundColor Cyan
 # Ensure Bonjour / mDNS discovery isn't blocked by Windows Firewall during pit troubleshooting
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 Write-Warning "Windows Firewall is disabled for pit diagnostics. Re-enable after events."

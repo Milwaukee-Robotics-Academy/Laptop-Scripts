@@ -13,19 +13,19 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
 Write-Host "Starting FRC Driver Station Post Event Configuration..." -ForegroundColor Cyan
 
-# Re-enable Windows Update Service to prevent mid-match updates
+# Re-enable Windows Update Service 
 Write-Host "[*] Re-enabling Windows Update service..." -ForegroundColor Yellow
 Start-Service -Name wuauserv -ErrorAction SilentlyContinue
 Set-Service -Name wuauserv -StartupType Automatic -ErrorAction SilentlyContinue
 
-# Re-enable Wi-Fi and Bluetooth to prevent interference (keep Ethernet active)
+# Re-enable Wi-Fi and Bluetooth 
 Write-Host "[*] Re-enabling Wi-Fi and Bluetooth adapters..." -ForegroundColor Yellow
 Get-NetAdapter | Where-Object { $_.InterfaceDescription -match "Wireless|Wi-Fi|Bluetooth" } | Enable-NetAdapter -Confirm:$false -ErrorAction SilentlyContinue
 
 # Configure Ethernet Adapter for DHCP and disable IPv6
 . "$PSScriptRoot\network-dhcp.ps1"
 
-# 5. Completely disable Windows Defender Firewall across all profiles
+# Completely disable Windows Defender Firewall across all profiles
 Write-Host "[*] Disabling Windows Defender Firewall (Domain, Private, Public)..." -ForegroundColor Yellow
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 

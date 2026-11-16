@@ -6,9 +6,10 @@ $WingetApps = @(
     "7zip.7zip",                      # Archive & log extraction
     "Notepad++.Notepad++",            # Quick log & JSON config inspection
     "AngryIPScanner.AngryIPScanner",  # Fast subnet scanning for 10.TE.AM.x devices
-	"Python.Python.3.15",	          # Python language
-	"mjansen4857.pathplanner",		  # Path Planner
-	"AgileBits.1Password"			  # 1Password
+    "Apple.Bonjour",                  # Bonjour / mDNS discovery
+    "Python.Python.3.15",             # Python language
+    "mjansen4857.pathplanner",        # Path Planner
+    "AgileBits.1Password"             # 1Password
 )
 
 foreach ($App in $WingetApps) {
