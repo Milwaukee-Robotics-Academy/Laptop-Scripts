@@ -53,7 +53,7 @@ if ($Info) {
 
 $ErrorActionPreference = "Stop"
 
-# 1. Configure destination folder
+# Configure destination folder
 if (-not (Test-Path -Path $DownloadDir)) {
     New-Item -ItemType Directory -Path $DownloadDir | Out-Null
 }
@@ -100,10 +100,24 @@ function Get-LatestFrc2027Asset {
     Write-Host "Saved to: $OutFile`n" -ForegroundColor Gray
 }
 
-# 2. Download WPILib 2027 Windows Installer
+# Download WPILib 2027 Windows Installer
 Get-LatestFrc2027Asset -Repo "wpilibsuite/allwpilib" -AssetPattern "Windows.*\.iso$" -Label "WPILib Suite"
 
-# 3. Download 2027 FIRST Driver Station Windows Installer
+# Download 2027 FIRST Driver Station Windows Installer
 Get-LatestFrc2027Asset -Repo "wpilibsuite/FirstDriverStation-Public" -AssetPattern "\.exe$" -Label "FIRST Driver Station"
 
+#install vscode extensions
+Write-Host "Installing recommended VS Code extensions for FRC 2027..." -ForegroundColor Cyan
+$extensions = @(
+    "GitHub.remotehub",          # GitHub Repositories (virtual workspaces)
+    "GitHub.codespaces",         # GitHub Codespaces (cloud workspaces)
+    "vscjava.vscode-java-pack",  # Extension Pack for Java
+    "ms-vscode.PowerShell",      # PowerShell
+    "ms-python.python"           # Python (includes Pylance & Debugger)
+)
+
+foreach ($ext in $extensions) {
+    Write-Host "Installing $ext..." -ForegroundColor Cyan
+    code --install-extension $ext --force
+}
 Write-Host "All downloads complete! Files are located in: $DownloadDir" -ForegroundColor Yellow
