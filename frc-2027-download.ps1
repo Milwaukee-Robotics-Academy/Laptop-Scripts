@@ -35,75 +35,46 @@
     .\frc-2027-download.ps1
     Downloads the 2027 WPILib ISO and FIRST Driver Station EXE to the default Downloads folder.
 #>
+# Save as Download-FRCSoftware.ps1 and run in PowerShell
+$DownloadDir = "c:\FRC2027_Installers"
+New-Item -ItemType Directory -Force -Path $DownloadDir | Out-Null
 
-#Requires -Version 5.1
-[CmdletBinding()]
-param (
-    [Alias("Help", "h", "?")]
-    [switch]$Info,
+# Ensure TLS 1.2+ for GitHub API
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$Headers = @{ 
+    "User-Agent" = "FRC-Setup-Script"
+#    "Accept"     = "application/vnd.github+json"
+ }
 
-    [string]$DownloadDir = ("C:\FRC_2027_Downloads")
-)
-
-# If -Info (or -Help) is passed, display the comment-based help and exit without running downloads
-if ($Info) {
-    Get-Help -Name $MyInvocation.MyCommand.Path -Detailed
-    exit 0
-}
-
-$ErrorActionPreference = "Stop"
-
-# Configure destination folder
-if (-not (Test-Path -Path $DownloadDir)) {
-    New-Item -ItemType Directory -Path $DownloadDir | Out-Null
-}
-
-# GitHub API requires a User-Agent header
-$Headers = @{ "User-Agent" = "FRC-2027-Downloader" }
-
-# Helper function to query GitHub Releases (including pre-releases) and download matching Windows assets
-function Get-LatestFrc2027Asset {
-    param (
+function Get-LatestGitHubReleaseAsset {
+    param(
         [string]$Repo,
         [string]$AssetPattern,
-        [string]$Label
+        [switch]$IncludePreReleases
     )
-
-    Write-Host "Checking $Repo for latest 2027 $Label..." -ForegroundColor Cyan
-    $ApiUrl = "https://github.com/repos/$Repo/releases"
-    
-    # Fetch releases and filter for 2027 tags (catches both pre-release alphas/betas and final kickoff releases)
-    $Releases = Invoke-RestMethod -Uri $ApiUrl -Headers $Headers
-    $TargetRelease = $Releases | Where-Object { $_.tag_name -match "2027" } | Select-Object -First 1
-
-    if (-not $TargetRelease) {
-        Write-Warning "No 2027 release found in $Repo."
-        return
+    Write-Host "Checking latest release for $Repo..." -ForegroundColor Cyan
+    if ($IncludePreReleases) {
+        $Releases = Invoke-RestMethod -Uri "https://github.com" -Headers $Headers -Method Get
+        $Release = $Releases | Select-Object -First 1
+    } else {
+        $Release = Invoke-RestMethod -Uri "https://github.com/latest" -Headers $Headers
     }
 
-    $Asset = $TargetRelease.assets | Where-Object { $_.name -match $AssetPattern } | Select-Object -First 1
-
-    if (-not $Asset) {
-        Write-Warning "No asset matching '$AssetPattern' found in release $($TargetRelease.tag_name)."
-        return
+    $Asset = $Release.assets | Where-Object { $_.name -like $AssetPattern } | Select-Object -First 1
+    if ($Asset) {
+        $OutFile = Join-Path $DownloadDir $Asset.name
+        Write-Host "Downloading $($Asset.name) ($($Release.tag_name))..." -ForegroundColor Green
+        Invoke-WebRequest -Uri $Asset.browser_download_url -OutFile $OutFile
+    } else {
+        Write-Warning "No matching asset found for '$AssetPattern' in $Repo ($($Release.tag_name))."
     }
-
-    $OutFile = Join-Path -Path $DownloadDir -ChildPath $Asset.name
-    Write-Host "Found $($TargetRelease.tag_name): Downloading $($Asset.name) ($([math]::Round($Asset.size / 1MB, 1)) MB)..." -ForegroundColor Green
-
-    # Use WebClient for faster downloads on large ISO/EXE files compared to Invoke-WebRequest
-    $WebClient = New-Object System.Net.WebClient
-    $WebClient.Headers.Add("User-Agent", "FRC-2027-Downloader")
-    $WebClient.DownloadFile($Asset.browser_download_url, $OutFile)
-    $WebClient.Dispose()
-
-    Write-Host "Saved to: $OutFile`n" -ForegroundColor Gray
 }
 
-# Download WPILib 2027 Windows Installer
-Get-LatestFrc2027Asset -Repo "wpilibsuite/allwpilib" -AssetPattern "Windows.*\.iso$" -Label "WPILib Suite"
+# 1. WPILib Offline Installer (Includes VS Code, C++/Java Toolchains, Gradle, AdvantageScope, PathPlanner, etc.)
+# Change -IncludePreReleases:$false to $true if testing 2027 Alpha builds
+Get-LatestGitHubReleaseAsset -Repo "wpilibsuite/allwpilib" -AssetPattern "*Windows-x64*.iso" -IncludePreReleases:$true
 
-# Download 2027 FIRST Driver Station Windows Installer
-Get-LatestFrc2027Asset -Repo "wpilibsuite/FirstDriverStation-Public" -AssetPattern "\.exe$" -Label "FIRST Driver Station"
+# 2. Cross-Platform FIRST Driver Station (Newer Systemcore / Alpha DS)
+Get-LatestGitHubReleaseAsset -Repo "wpilibsuite/FirstDriverStation-Public" -AssetPattern "*Windows*.exe" -IncludePreReleases:$true
 
 Write-Host "All downloads complete! Files are located in: $DownloadDir" -ForegroundColor Yellow

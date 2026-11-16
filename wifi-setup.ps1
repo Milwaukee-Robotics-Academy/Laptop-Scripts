@@ -25,10 +25,10 @@ $profileXml = @"
 	<name>$escapedSSID</name>
 	<SSIDConfig><SSID><name>$escapedSSID</name></SSID></SSIDConfig>
 	<connectionType>ESS</connectionType>
-	<connectionMode>manual</connectionMode>
+	<connectionMode>auto</connectionMode>
 	<MSM><security>
 		<authEncryption>
-			<authentication>WPA3SAE</authentication>
+			<authentication>WPA2SAE</authentication>
 			<encryption>AES</encryption>
 			<useOneX>false</useOneX>
 		</authEncryption>
@@ -42,9 +42,16 @@ $profileXml = @"
 "@
 
 $profilePath = Join-Path $env:TEMP ("wifi-{0}.xml" -f [guid]::NewGuid())
+
+# Configure registry keys to allow app and desktop location access
+New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetDesktopAppsAccessLocation" -Value 1 -Type DWord
+# (Additional registry and service parameters can be applied via script to enable global location services and the Geolocation service)
+
 try {
 		[IO.File]::WriteAllText($profilePath, $profileXml, [Text.UTF8Encoding]::new($false))
         & netsh.exe wlan show profile "name=$ssid" *> $null
+		& netsh.exe wlan connect name="$SSID"
 if ($LASTEXITCODE -ne 0) {
 		& netsh.exe wlan add profile "filename=$profilePath" user=current
 		if ($LASTEXITCODE -ne 0) { throw 'Failed to add the WPA3-Personal Wi-Fi profile.' }
