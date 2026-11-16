@@ -1,6 +1,6 @@
 Write-Host "Setting up Wi-Fi..." -ForegroundColor Cyan
-$defaultSSID = 'Doublee'
-$defaultPassword = '1010101010'
+$defaultSSID = 'MilwaukeeRobotics'
+$defaultPassword = 'Robotics123'
 
 $ssidInput = Read-Host "Wi-Fi SSID [$defaultSSID]"
 $ssid = if ([string]::IsNullOrWhiteSpace($ssidInput)) { $defaultSSID } else { $ssidInput.Trim() }
