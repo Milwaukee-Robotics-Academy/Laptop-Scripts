@@ -70,7 +70,7 @@ function Get-LatestFrc2027Asset {
     )
 
     Write-Host "Checking $Repo for latest 2027 $Label..." -ForegroundColor Cyan
-    $ApiUrl = "https://://github.com/repos/$Repo/releases"
+    $ApiUrl = "https://github.com/repos/$Repo/releases"
     
     # Fetch releases and filter for 2027 tags (catches both pre-release alphas/betas and final kickoff releases)
     $Releases = Invoke-RestMethod -Uri $ApiUrl -Headers $Headers
@@ -106,18 +106,4 @@ Get-LatestFrc2027Asset -Repo "wpilibsuite/allwpilib" -AssetPattern "Windows.*\.i
 # Download 2027 FIRST Driver Station Windows Installer
 Get-LatestFrc2027Asset -Repo "wpilibsuite/FirstDriverStation-Public" -AssetPattern "\.exe$" -Label "FIRST Driver Station"
 
-#install vscode extensions
-Write-Host "Installing recommended VS Code extensions for FRC 2027..." -ForegroundColor Cyan
-$extensions = @(
-    "GitHub.remotehub",          # GitHub Repositories (virtual workspaces)
-    "GitHub.codespaces",         # GitHub Codespaces (cloud workspaces)
-    "vscjava.vscode-java-pack",  # Extension Pack for Java
-    "ms-vscode.PowerShell",      # PowerShell
-    "ms-python.python"           # Python (includes Pylance & Debugger)
-)
-
-foreach ($ext in $extensions) {
-    Write-Host "Installing $ext..." -ForegroundColor Cyan
-    code --install-extension $ext --force
-}
 Write-Host "All downloads complete! Files are located in: $DownloadDir" -ForegroundColor Yellow

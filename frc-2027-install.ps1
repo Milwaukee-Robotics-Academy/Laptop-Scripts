@@ -43,6 +43,22 @@ foreach ($File in $LocalInstallers) {
 # Set Angry IP Scanner default settings
 . "$PSScriptRoot\angry-ip-scanner-default-settings.ps1"
 
+
+#install vscode extensions
+Write-Host "Installing recommended VS Code extensions for FRC 2027..." -ForegroundColor Cyan
+$extensions = @(
+    "GitHub.remotehub",          # GitHub Repositories (virtual workspaces)
+    "GitHub.codespaces",         # GitHub Codespaces (cloud workspaces)
+    "vscjava.vscode-java-pack",  # Extension Pack for Java
+    "ms-vscode.PowerShell",      # PowerShell
+    "ms-python.python"           # Python (includes Pylance & Debugger)
+)
+
+foreach ($ext in $extensions) {
+    Write-Host "Installing $ext..." -ForegroundColor Cyan
+    code --install-extension $ext --force
+}
+
 Write-Host "`n=== Configuring Windows Networking & Firewall for FRC ===" -ForegroundColor Cyan
 # Ensure Bonjour / mDNS discovery isn't blocked by Windows Firewall during pit troubleshooting
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
