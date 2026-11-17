@@ -44,6 +44,7 @@ New-Item -ItemType Directory -Force -Path $DownloadDir | Out-Null
 $Headers = @{ 
     "User-Agent" = "FRC-Setup-Script"
 #    "Accept"     = "application/vnd.github+json"
+"Authorization" = "token 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"
  }
 
 function Get-LatestGitHubReleaseAsset {
@@ -59,8 +60,17 @@ function Get-LatestGitHubReleaseAsset {
     } else {
         $Release = Invoke-RestMethod -Uri "https://github.com/latest" -Headers $Headers
     }
+   # Write-Host "$Release.body" -ForegroundColor Gray
+    $body = [regex]::Matches($Release.body, '\[([^\]]+)\]\((https?:\/\/[^\)]+)\)')
+    Write-Host "$body"
+    $links = [regex]::Matches($Release.body, '\[([^\]]+)\]\((https?://[^\)]+)\)') | ForEach-Object {
+        [PSCustomObject]@{
+            Label = $_.Groups[1].Value
+            Url   = $_.Groups[2].Value
+        }
+    }
+    $Asset = $links | Where-Object {$_.Url -like "*Windows-x64*.iso" }| Select-Object -ExpandProperty Url -First 1
 
-    $Asset = $Release.assets | Where-Object { $_.name -like $AssetPattern } | Select-Object -First 1
     if ($Asset) {
         $OutFile = Join-Path $DownloadDir $Asset.name
         Write-Host "Downloading $($Asset.name) ($($Release.tag_name))..." -ForegroundColor Green
