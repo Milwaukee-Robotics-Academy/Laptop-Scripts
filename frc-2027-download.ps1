@@ -44,7 +44,7 @@ New-Item -ItemType Directory -Force -Path $DownloadDir | Out-Null
 $Headers = @{ 
     "User-Agent" = "FRC-Setup-Script"
 #    "Accept"     = "application/vnd.github+json"
-"Authorization" = "token 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"
+
  }
 
 function Get-LatestGitHubReleaseAsset {

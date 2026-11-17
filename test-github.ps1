@@ -1,7 +1,6 @@
 $Headers = @{ 
     "User-Agent" = "FRC-Setup-Script"
 #    "Accept"     = "application/vnd.github+json"
-    "Authorization" = "token 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"
  } 
  
  $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/wpilibsuite/allwpilib/releases" -Headers $Headers
