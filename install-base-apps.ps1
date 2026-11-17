@@ -10,13 +10,13 @@ $WingetApps = @(
     "Python.Python.3.15",             # Python language
     "mjansen4857.pathplanner",        # Path Planner
     "AgileBits.1Password",             # 1Password
-    "microsoft.powertoys",            # MS PowerToys (FancyZones, Color Picker, etc. for FRC development)
-    "balenaEtcher",                   # Balena Etcher (USB imaging for Systemcore & VH-109 radios)
-    "microsoft.powershell"            # PowerShell 7.x (latest stable)
+    "Microsoft.PowerToys",            # MS PowerToys (FancyZones, Color Picker, etc. for FRC development)
+    "Balena.Etcher",                   # Balena Etcher (USB imaging for Systemcore & VH-109 radios)
+    "Microsoft.PowerShell"            # PowerShell 7.x (latest stable)
 
 )
 
 foreach ($App in $WingetApps) {
     Write-Host "Installing $App..." -ForegroundColor Yellow
-    winget install --id $App --exact --silent --accept-source-agreements --accept-package-agreements
+    winget install --id $App --silent --accept-source-agreements --accept-package-agreements
 }
