@@ -1,60 +1,80 @@
-#Set up our default parameters
-
-$WPILIB_REPO = "wpilibsuite/allwpilib"
-$WPILIB_ASSET_PATTERN = "*Windows-x64*.iso"
-$WPILIB_ASSET_NAME = "wpilibsuite-allwpilib-Windows-x64.iso"
-$FRC_DS_REPO = "wpilibsuite/FirstDriverStation-Public"
-$FRC_DS_ASSET_PATTERN = "*win-x64*.exe"
-$FRC_DS_ASSET_NAME = "FirstDriverStation-win-x64.exe"
+# Set up default parameters
 $DownloadDir = "c:\FRC2027_Installers"
 $INCLUDE_PRERELEASES = $true
 
+# Define packages to download (repository, asset matching pattern, and output filename)
+$Packages = @(
+    @{
+        Name         = "WPILib"
+        Repo         = "wpilibsuite/allwpilib"
+        AssetPattern = "*Windows-x64*.iso"
+        FileName     = "wpilibsuite-allwpilib-Windows-x64.iso"
+    },
+    @{
+        Name         = "FRC Driver Station"
+        Repo         = "wpilibsuite/FirstDriverStation-Public"
+        AssetPattern = "*win-x64*.exe"
+        FileName     = "FirstDriverStation-win-x64.exe"
+    }
+)
 
-#set headers for GitHub API request
+# Ensure TLS 1.2 is enabled for GitHub API connections
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# Set headers for GitHub API requests
 $Headers = @{ 
     "User-Agent" = "FRC-Setup-Script"
-#    "Accept"     = "application/vnd.github+json"
-} 
- 
-#get the latest release information from the GitHub API
-if ($INCLUDE_PRERELEASES) {
-    $WPILibReleases = Invoke-RestMethod -Uri "https://api.github.com/repos/$WPILIB_REPO/releases" -Headers $Headers
-    $WPILibRelease = $WPILibReleases | Select-Object -First 1
-} else {
-    $WPILibRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/$WPILIB_REPO/releases/latest" -Headers $Headers
 }
 
-#pull all the links from the release body using regex for the assets
-$WPILibLinks = [regex]::Matches($WPILibRelease.body, '\[([^\]]+)\]\((https?://[^\)]+)\)') | ForEach-Object {
-    [PSCustomObject]@{
-        Label = $_.Groups[1].Value
-        Url   = $_.Groups[2].Value
+# Function to get the latest GitHub release
+function Get-GitHubRelease {
+    param (
+        [string]$Repo,
+        [bool]$IncludePrereleases = $false,
+        [hashtable]$Headers = @{}
+    )
+
+    if ($IncludePrereleases) {
+        $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases" -Headers $Headers
+        return ($releases | Select-Object -First 1)
+    } else {
+        return (Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers $Headers)
     }
 }
 
-# Filter for the specific installer you want (e.g., Windows x64)
-$myWPILibLink = $WPILibLinks | Where-Object {$_.Url -like $WPILIB_ASSET_PATTERN }| Select-Object -ExpandProperty Url -First 1
-$myWPILibLinkName = $WPILibLinks | Where-Object {$_.Url -like $WPILIB_ASSET_PATTERN }| Select-Object -ExpandProperty Label -First 1
+# Function to extract download URL from GitHub release assets or markdown body links
+function Get-ReleaseAssetUrl {
+    param (
+        [psobject]$Release,
+        [string]$AssetPattern
+    )
 
-Write-Host "$myWPILibLink" -ForegroundColor Green
- 
+    # 1. Check direct release assets (e.g., Driver Station)
+    if ($Release.assets) {
+        $asset = $Release.assets | Where-Object { $_.name -like $AssetPattern -or $_.browser_download_url -like $AssetPattern } | Select-Object -First 1
+        if ($asset -and $asset.browser_download_url) {
+            return $asset.browser_download_url
+        }
+    }
 
-# Get DS 
-#get the latest release information from the GitHub API
-if ($INCLUDE_PRERELEASES) {
-    $FRC_DS_Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$FRC_DS_REPO/releases" -Headers $Headers
-    $FRC_DS_Release = $FRC_DS_Releases | Select-Object -First 1
-} else {
-    $FRC_DS_Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$FRC_DS_REPO/releases/latest" -Headers $Headers
+    # 2. Check markdown links in release notes body (e.g., WPILib large ISO installers)
+    if ($Release.body) {
+        $markdownLinks = [regex]::Matches($Release.body, '\[([^\]]+)\]\((https?://[^\)]+)\)') | ForEach-Object {
+            [PSCustomObject]@{
+                Label = $_.Groups[1].Value
+                Url   = $_.Groups[2].Value
+            }
+        }
+        $match = $markdownLinks | Where-Object { $_.Url -like $AssetPattern -or $_.Label -like $AssetPattern } | Select-Object -First 1
+        if ($match) {
+            return $match.Url
+        }
+    }
+
+    return $null
 }
-#Write-Host "Checking latest release for $FRC_DS_REPO..." -ForegroundColor Cyan
-$FRC_DS_Release = $FRC_DS_Releases | Select-Object -First 1
 
-#$myDSLink = $FRC_DS_Release.assets | Where-Object { $_.name -like $FRC_DS_ASSET_PATTERN } | Select-Object -ExpandProperty url -First 1
-$DSDownloadUrl = $FRC_DS_Release.assets | Where-Object { $_.name -like $FRC_DS_ASSET_PATTERN } | Select-Object -ExpandProperty browser_download_url -First 1
-Write-Host "$DSDownloadUrl" -ForegroundColor Green
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
+# Ensure download directory exists
 Write-Host "Creating download directory $DownloadDir ..." -ForegroundColor Green
 if (-not (Test-Path -Path $DownloadDir)) {
     New-Item -ItemType Directory -Path $DownloadDir | Out-Null
@@ -63,26 +83,25 @@ if (-not (Test-Path -Path $DownloadDir)) {
     Write-Host "Download directory $DownloadDir already exists." -ForegroundColor Yellow
 }
 
-write-Host "Downloading $($FRC_DS_ASSET_NAME) ..." -ForegroundColor Green
-   
-if ($DSDownloadUrl) {
-    $OutFile = Join-Path $DownloadDir $FRC_DS_ASSET_NAME
-    Write-Host "Downloading $($FRC_DS_ASSET_NAME) ..." -ForegroundColor Green
-    #   Invoke-WebRequest -Uri $myDSLink -OutFile $OutFile
-    curl.exe -L --noproxy "*" -o $OutFile $DSDownloadUrl
-    #write-host "curl.exe --noproxy "*" -o $OutFile $DSDownloadUrl"
-    Write-Host "Downloaded $($FRC_DS_ASSET_NAME) to $OutFile" -ForegroundColor Green
-} else {
-    Write-Warning "No matching asset found for '$DSDownloadUrl'."
-}
+# Download each package
+foreach ($pkg in $Packages) {
+    Write-Host "`nChecking latest release for $($pkg.Name) ($($pkg.Repo))..." -ForegroundColor Cyan
+    $release = Get-GitHubRelease -Repo $pkg.Repo -IncludePrereleases $INCLUDE_PRERELEASES -Headers $Headers
 
-write-Host "Downloading $($WPILIB_ASSET_NAME) ..." -ForegroundColor Green
-if ($myWPILibLink) {
-    $OutFile = Join-Path $DownloadDir $WPILIB_ASSET_NAME
-    Write-Host "Downloading $($WPILIB_ASSET_NAME) ..." -ForegroundColor Green
-    #   Invoke-WebRequest -Uri $myWPILibLink -OutFile $OutFile
-    curl.exe -L --noproxy "*" -o $OutFile $myWPILibLink
-    Write-Host "Downloaded $($WPILIB_ASSET_NAME) to $OutFile" -ForegroundColor Green
-} else {
-    Write-Warning "No matching asset found for '$myWPILibLink'."
+    if (-not $release) {
+        Write-Warning "Could not retrieve release info for $($pkg.Repo)."
+        continue
+    }
+
+    $downloadUrl = Get-ReleaseAssetUrl -Release $release -AssetPattern $pkg.AssetPattern
+
+    if ($downloadUrl) {
+        Write-Host "Found URL: $downloadUrl" -ForegroundColor Green
+        $outFile = Join-Path $DownloadDir $pkg.FileName
+        Write-Host "Downloading $($pkg.FileName) ..." -ForegroundColor Green
+        curl.exe -L --noproxy "*" -o $outFile $downloadUrl
+        Write-Host "Downloaded $($pkg.FileName) to $outFile" -ForegroundColor Green
+    } else {
+        Write-Warning "No matching asset found for '$($pkg.Name)' with pattern '$($pkg.AssetPattern)'."
+    }
 }
