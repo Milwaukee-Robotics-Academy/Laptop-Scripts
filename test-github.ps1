@@ -36,7 +36,7 @@ $WPILibLinks = [regex]::Matches($WPILibRelease.body, '\[([^\]]+)\]\((https?://[^
 $myWPILibLink = $WPILibLinks | Where-Object {$_.Url -like $WPILIB_ASSET_PATTERN }| Select-Object -ExpandProperty Url -First 1
 $myWPILibLinkName = $WPILibLinks | Where-Object {$_.Url -like $WPILIB_ASSET_PATTERN }| Select-Object -ExpandProperty Label -First 1
 
-#Write-Host "$myWPILibLink" -ForegroundColor Green
+Write-Host "$myWPILibLink" -ForegroundColor Green
  
 
 # Get DS 
@@ -52,15 +52,14 @@ $FRC_DS_Release = $FRC_DS_Releases | Select-Object -First 1
 
 $myDSLink = $FRC_DS_Release.assets | Where-Object { $_.name -like $FRC_DS_ASSET_PATTERN } | Select-Object -ExpandProperty url -First 1
 
-#Write-Host "$myDSLink" -ForegroundColor Green
+Write-Host "$myDSLink" -ForegroundColor Green
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 if ($myWPILibLink) {
     $OutFile = Join-Path $DownloadDir $WPILIB_ASSET_NAME
     Write-Host "Downloading $($WPILIB_ASSET_NAME) ..." -ForegroundColor Green
-    Invoke-WebRequest -Uri $myWPILibLink -OutFile $OutFile
- #curl -o $OutFile $myWPILibLink
-    $Error[0].Exception | Format-List * -Force
-    $Error[0].Exception.InnerException | Format-List * -Force
+    #   Invoke-WebRequest -Uri $myWPILibLink -OutFile $OutFile
+    curl.exe --noproxy "*" -o $OutFile $myWPILibLink
+    Write-Host "Downloaded $($WPILIB_ASSET_NAME) to $OutFile" -ForegroundColor Green
 } else {
     Write-Warning "No matching asset found for '$myWPILibLink'."
 }
