@@ -45,6 +45,16 @@ foreach ($File in $LocalInstallers) {
 
 
 #install vscode extensions
+
+#make sure code command is available
+$codePath = @(
+    "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd",
+    "$env:ProgramFiles\Microsoft VS Code\bin\code.cmd"
+) | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+if (-not $codePath) {
+    Write-Error "Could not find code.cmd. Please verify where VS Code is installed."
+    exit 1
 Write-Host "Installing recommended VS Code extensions for FRC 2027..." -ForegroundColor Cyan
 $extensions = @(
     "GitHub.remotehub",          # GitHub Repositories (virtual workspaces)
@@ -56,7 +66,7 @@ $extensions = @(
 
 foreach ($ext in $extensions) {
     Write-Host "Installing $ext..." -ForegroundColor Cyan
-    code --install-extension $ext --force
+    & $codePath --install-extension $ext --force
 }
 
 Write-Host "`n=== Configuring Windows Networking & Firewall for FRC ===" -ForegroundColor Cyan
