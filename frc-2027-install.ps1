@@ -52,9 +52,7 @@ $codePath = @(
     "$env:ProgramFiles\Microsoft VS Code\bin\code.cmd"
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 
-if (-not $codePath) {
-    Write-Error "Could not find code.cmd. Please verify where VS Code is installed."
-    exit 1
+
 Write-Host "Installing recommended VS Code extensions for FRC 2027..." -ForegroundColor Cyan
 $extensions = @(
     "GitHub.remotehub",          # GitHub Repositories (virtual workspaces)
