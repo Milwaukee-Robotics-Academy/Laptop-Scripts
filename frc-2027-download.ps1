@@ -1,90 +1,88 @@
-<#
-.SYNOPSIS
-    Downloads the official FIRST Robotics Competition (FRC) 2027 software installers for Windows.
+#Set up our default parameters
 
-.DESCRIPTION
-    Queries the GitHub Releases API to dynamically locate and download the latest 2027 Windows 
-    installers for both developers and drive teams into a single directory:
-      1. WPILib Suite (.iso) - Includes VS Code, C++/Java toolchains, AdvantageScope, Elastic, and PathPlanner.
-      2. FIRST Driver Station (.exe) - Standalone Driver Station for Systemcore (replaces legacy NI Game Tools).
-
-    PREREQUISITES & SETUP:
-      - OS: 64-bit Windows 10 or Windows 11 (Windows 10 support is subject to change during 2027 development).
-      - PowerShell: Version 5.1 or newer.
-      - Network: Active internet connection with access to ://github.com and github.com.
-      - Disk Space: At least 5 GB of free storage space (the WPILib ISO alone is ~2.4 GB).
-      - Execution Policy: If blocked from running scripts, run:
-        Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-
-.PARAMETER Info
-    Displays the script description, prerequisites, and setup instructions without downloading any files.
-
-.PARAMETER DownloadDir
-    Optional custom path where the installers will be saved. 
-    Defaults to "$env:USERPROFILE\Downloads\FRC2027_Installers".
-
-.EXAMPLE
-    .\frc-2027-download.ps1 -Info
-    Displays prerequisites, setup requirements, and usage details without executing downloads.
-
-.EXAMPLE
-    Get-Help .\frc-2027-download.ps1 -Full
-    Uses PowerShell's built-in help system to view full documentation and examples.
-
-.EXAMPLE
-    .\frc-2027-download.ps1
-    Downloads the 2027 WPILib ISO and FIRST Driver Station EXE to the default Downloads folder.
-#>
-# Save as Download-FRCSoftware.ps1 and run in PowerShell
+$WPILIB_REPO = "wpilibsuite/allwpilib"
+$WPILIB_ASSET_PATTERN = "*Windows-x64*.iso"
+$WPILIB_ASSET_NAME = "wpilibsuite-allwpilib-Windows-x64.iso"
+$FRC_DS_REPO = "wpilibsuite/FirstDriverStation-Public"
+$FRC_DS_ASSET_PATTERN = "*win-x64*.exe"
+$FRC_DS_ASSET_NAME = "FirstDriverStation-win-x64.exe"
 $DownloadDir = "c:\FRC2027_Installers"
-New-Item -ItemType Directory -Force -Path $DownloadDir | Out-Null
+$INCLUDE_PRERELEASES = $true
 
-# Ensure TLS 1.2+ for GitHub API
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+#set headers for GitHub API request
 $Headers = @{ 
     "User-Agent" = "FRC-Setup-Script"
 #    "Accept"     = "application/vnd.github+json"
+} 
+ 
+#get the latest release information from the GitHub API
+if ($INCLUDE_PRERELEASES) {
+    $WPILibReleases = Invoke-RestMethod -Uri "https://api.github.com/repos/$WPILIB_REPO/releases" -Headers $Headers
+    $WPILibRelease = $WPILibReleases | Select-Object -First 1
+} else {
+    $WPILibRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/$WPILIB_REPO/releases/latest" -Headers $Headers
+}
 
- }
-
-function Get-LatestGitHubReleaseAsset {
-    param(
-        [string]$Repo,
-        [string]$AssetPattern,
-        [switch]$IncludePreReleases
-    )
-    Write-Host "Checking latest release for $Repo..." -ForegroundColor Cyan
-    if ($IncludePreReleases) {
-        $Releases = Invoke-RestMethod -Uri "https://github.com" -Headers $Headers -Method Get
-        $Release = $Releases | Select-Object -First 1
-    } else {
-        $Release = Invoke-RestMethod -Uri "https://github.com/latest" -Headers $Headers
-    }
-   # Write-Host "$Release.body" -ForegroundColor Gray
-    $body = [regex]::Matches($Release.body, '\[([^\]]+)\]\((https?:\/\/[^\)]+)\)')
-    Write-Host "$body"
-    $links = [regex]::Matches($Release.body, '\[([^\]]+)\]\((https?://[^\)]+)\)') | ForEach-Object {
-        [PSCustomObject]@{
-            Label = $_.Groups[1].Value
-            Url   = $_.Groups[2].Value
-        }
-    }
-    $Asset = $links | Where-Object {$_.Url -like "*Windows-x64*.iso" }| Select-Object -ExpandProperty Url -First 1
-
-    if ($Asset) {
-        $OutFile = Join-Path $DownloadDir $Asset.name
-        Write-Host "Downloading $($Asset.name) ($($Release.tag_name))..." -ForegroundColor Green
-        Invoke-WebRequest -Uri $Asset.browser_download_url -OutFile $OutFile
-    } else {
-        Write-Warning "No matching asset found for '$AssetPattern' in $Repo ($($Release.tag_name))."
+#pull all the links from the release body using regex for the assets
+$WPILibLinks = [regex]::Matches($WPILibRelease.body, '\[([^\]]+)\]\((https?://[^\)]+)\)') | ForEach-Object {
+    [PSCustomObject]@{
+        Label = $_.Groups[1].Value
+        Url   = $_.Groups[2].Value
     }
 }
 
-# 1. WPILib Offline Installer (Includes VS Code, C++/Java Toolchains, Gradle, AdvantageScope, PathPlanner, etc.)
-# Change -IncludePreReleases:$false to $true if testing 2027 Alpha builds
-Get-LatestGitHubReleaseAsset -Repo "wpilibsuite/allwpilib" -AssetPattern "*Windows-x64*.iso" -IncludePreReleases:$true
+# Filter for the specific installer you want (e.g., Windows x64)
+$myWPILibLink = $WPILibLinks | Where-Object {$_.Url -like $WPILIB_ASSET_PATTERN }| Select-Object -ExpandProperty Url -First 1
+$myWPILibLinkName = $WPILibLinks | Where-Object {$_.Url -like $WPILIB_ASSET_PATTERN }| Select-Object -ExpandProperty Label -First 1
 
-# 2. Cross-Platform FIRST Driver Station (Newer Systemcore / Alpha DS)
-Get-LatestGitHubReleaseAsset -Repo "wpilibsuite/FirstDriverStation-Public" -AssetPattern "*Windows*.exe" -IncludePreReleases:$true
+Write-Host "$myWPILibLink" -ForegroundColor Green
+ 
 
-Write-Host "All downloads complete! Files are located in: $DownloadDir" -ForegroundColor Yellow
+# Get DS 
+#get the latest release information from the GitHub API
+if ($INCLUDE_PRERELEASES) {
+    $FRC_DS_Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$FRC_DS_REPO/releases" -Headers $Headers
+    $FRC_DS_Release = $FRC_DS_Releases | Select-Object -First 1
+} else {
+    $FRC_DS_Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$FRC_DS_REPO/releases/latest" -Headers $Headers
+}
+#Write-Host "Checking latest release for $FRC_DS_REPO..." -ForegroundColor Cyan
+$FRC_DS_Release = $FRC_DS_Releases | Select-Object -First 1
+
+#$myDSLink = $FRC_DS_Release.assets | Where-Object { $_.name -like $FRC_DS_ASSET_PATTERN } | Select-Object -ExpandProperty url -First 1
+$DSDownloadUrl = $FRC_DS_Release.assets | Where-Object { $_.name -like $FRC_DS_ASSET_PATTERN } | Select-Object -ExpandProperty browser_download_url -First 1
+Write-Host "$DSDownloadUrl" -ForegroundColor Green
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+Write-Host "Creating download directory $DownloadDir ..." -ForegroundColor Green
+if (-not (Test-Path -Path $DownloadDir)) {
+    New-Item -ItemType Directory -Path $DownloadDir | Out-Null
+    Write-Host "Created download directory $DownloadDir." -ForegroundColor Green
+} else {
+    Write-Host "Download directory $DownloadDir already exists." -ForegroundColor Yellow
+}
+
+write-Host "Downloading $($FRC_DS_ASSET_NAME) ..." -ForegroundColor Green
+   
+if ($DSDownloadUrl) {
+    $OutFile = Join-Path $DownloadDir $FRC_DS_ASSET_NAME
+    Write-Host "Downloading $($FRC_DS_ASSET_NAME) ..." -ForegroundColor Green
+    #   Invoke-WebRequest -Uri $myDSLink -OutFile $OutFile
+    curl.exe -L --noproxy "*" -o $OutFile $DSDownloadUrl
+    #write-host "curl.exe --noproxy "*" -o $OutFile $DSDownloadUrl"
+    Write-Host "Downloaded $($FRC_DS_ASSET_NAME) to $OutFile" -ForegroundColor Green
+} else {
+    Write-Warning "No matching asset found for '$DSDownloadUrl'."
+}
+
+write-Host "Downloading $($WPILIB_ASSET_NAME) ..." -ForegroundColor Green
+if ($myWPILibLink) {
+    $OutFile = Join-Path $DownloadDir $WPILIB_ASSET_NAME
+    Write-Host "Downloading $($WPILIB_ASSET_NAME) ..." -ForegroundColor Green
+    #   Invoke-WebRequest -Uri $myWPILibLink -OutFile $OutFile
+    curl.exe -L --noproxy "*" -o $OutFile $myWPILibLink
+    Write-Host "Downloaded $($WPILIB_ASSET_NAME) to $OutFile" -ForegroundColor Green
+} else {
+    Write-Warning "No matching asset found for '$myWPILibLink'."
+}

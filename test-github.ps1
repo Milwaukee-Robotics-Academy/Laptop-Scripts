@@ -50,15 +50,38 @@ if ($INCLUDE_PRERELEASES) {
 #Write-Host "Checking latest release for $FRC_DS_REPO..." -ForegroundColor Cyan
 $FRC_DS_Release = $FRC_DS_Releases | Select-Object -First 1
 
-$myDSLink = $FRC_DS_Release.assets | Where-Object { $_.name -like $FRC_DS_ASSET_PATTERN } | Select-Object -ExpandProperty url -First 1
-
-Write-Host "$myDSLink" -ForegroundColor Green
+#$myDSLink = $FRC_DS_Release.assets | Where-Object { $_.name -like $FRC_DS_ASSET_PATTERN } | Select-Object -ExpandProperty url -First 1
+$DSDownloadUrl = $FRC_DS_Release.assets | Where-Object { $_.name -like $FRC_DS_ASSET_PATTERN } | Select-Object -ExpandProperty browser_download_url -First 1
+Write-Host "$DSDownloadUrl" -ForegroundColor Green
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+Write-Host "Creating download directory $DownloadDir ..." -ForegroundColor Green
+if (-not (Test-Path -Path $DownloadDir)) {
+    New-Item -ItemType Directory -Path $DownloadDir | Out-Null
+    Write-Host "Created download directory $DownloadDir." -ForegroundColor Green
+} else {
+    Write-Host "Download directory $DownloadDir already exists." -ForegroundColor Yellow
+}
+
+write-Host "Downloading $($FRC_DS_ASSET_NAME) ..." -ForegroundColor Green
+   
+if ($DSDownloadUrl) {
+    $OutFile = Join-Path $DownloadDir $FRC_DS_ASSET_NAME
+    Write-Host "Downloading $($FRC_DS_ASSET_NAME) ..." -ForegroundColor Green
+    #   Invoke-WebRequest -Uri $myDSLink -OutFile $OutFile
+    curl.exe -L --noproxy "*" -o $OutFile $DSDownloadUrl
+    #write-host "curl.exe --noproxy "*" -o $OutFile $DSDownloadUrl"
+    Write-Host "Downloaded $($FRC_DS_ASSET_NAME) to $OutFile" -ForegroundColor Green
+} else {
+    Write-Warning "No matching asset found for '$DSDownloadUrl'."
+}
+
+write-Host "Downloading $($WPILIB_ASSET_NAME) ..." -ForegroundColor Green
 if ($myWPILibLink) {
     $OutFile = Join-Path $DownloadDir $WPILIB_ASSET_NAME
     Write-Host "Downloading $($WPILIB_ASSET_NAME) ..." -ForegroundColor Green
     #   Invoke-WebRequest -Uri $myWPILibLink -OutFile $OutFile
-    curl.exe --noproxy "*" -o $OutFile $myWPILibLink
+    curl.exe -L --noproxy "*" -o $OutFile $myWPILibLink
     Write-Host "Downloaded $($WPILIB_ASSET_NAME) to $OutFile" -ForegroundColor Green
 } else {
     Write-Warning "No matching asset found for '$myWPILibLink'."
