@@ -2,7 +2,7 @@
 #Requires -RunAsAdministrator
 
 $ErrorActionPreference = "Stop"
-$InstallerDir = "C:\FRC_2027_Downloads"
+$InstallerDir = "c:\FRC2027_Installers"
 
 # Install base apps
 . "$PSScriptRoot\install-base-apps.ps1"
