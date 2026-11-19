@@ -61,7 +61,7 @@ $extensions = @(
     "ms-vscode.PowerShell",      # PowerShell
     "ms-python.python"           # Python (includes Pylance & Debugger)
 )
-
+write-Host "Using code command at: $codePath" -ForegroundColor Yellow
 foreach ($ext in $extensions) {
     Write-Host "Installing $ext..." -ForegroundColor Cyan
     & $codePath --install-extension $ext --force
