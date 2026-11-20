@@ -262,7 +262,7 @@ The `util/` directory contains modular sub-scripts designed to be invoked direct
 ## Bootstrap Installer (`LaptopInstaller/`)
 
 When deploying on freshly reimaged laptops that do not yet have Git installed:
-1. Copy or distribute the `LaptopInstaller/` folder (e.g., via USB drive or network share).
+1. Copy or distribute the `LaptopInstaller/` folder (e.g., via USB drive or [network share](https://drive.google.com/file/d/1zXlmaLduF_JXMjRIZljJAf-PdMoF30pz/view?usp=sharing)).
 2. Run `LoadScripts.exe` (or `loadscripts.ps1`).
 3. The script will:
    - Unpack the included `PortableGit.exe` to `.\PortableGit`.
