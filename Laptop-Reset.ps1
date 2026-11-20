@@ -3,19 +3,19 @@
 Write-Host "Starting System Reset and Configuration..." -ForegroundColor Cyan
 
 # Clear Windows Credential Manager for GitHub
-. "$PSScriptRoot\clear-github-creds.ps1"
+. "$ExeDir\util\clear-github-creds.ps1"
 # Reset Network Stack & Saved Wi-Fi Profiles
-. "$PSScriptRoot\network-dhcp.ps1"
-. "$PSScriptRoot\wifi-setup.ps1"
+. "$ExeDir\util\network-dhcp.ps1"
+. "$ExeDir\util\wifi-setup.ps1"
 
 # Remove unwanted apps
-. "$PSScriptRoot\remove-unwanted-apps.ps1"
+. "$ExeDir\util\remove-unwanted-apps.ps1"
 
 # Install base apps
-. "$PSScriptRoot\install-base-apps.ps1"
+. "$ExeDir\util\install-base-apps.ps1"
 
 # App default settings
-. "$PSScriptRoot\app-default-settings.ps1"
+. "$ExeDir\util\app-default-settings.ps1"
 
 
 Write-Host "Tasks complete. A system restart is recommended to finalize network resets." -ForegroundColor Green

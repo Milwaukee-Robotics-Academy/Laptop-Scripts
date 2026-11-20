@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop"
 $InstallerDir = "c:\FRC2027_Installers"
 
 # Install base apps
-. "$PSScriptRoot\install-base-apps.ps1"
+. "$ExeDir\util\install-base-apps.ps1"
 
 Write-Host "`n=== Running 2027 WPILib & Local FRC Installers ===" -ForegroundColor Cyan
 if (-Not (Test-Path $InstallerDir)) {
@@ -41,7 +41,7 @@ foreach ($File in $LocalInstallers) {
 }
 
 # Set Angry IP Scanner default settings
-. "$PSScriptRoot\angry-ip-scanner-default-settings.ps1"
+. "$ExeDir\util\angry-ip-scanner-default-settings.ps1"
 
 
 #install vscode extensions

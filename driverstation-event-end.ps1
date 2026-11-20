@@ -23,7 +23,7 @@ Write-Host "[*] Re-enabling Wi-Fi and Bluetooth adapters..." -ForegroundColor Ye
 Get-NetAdapter | Where-Object { $_.InterfaceDescription -match "Wireless|Wi-Fi|Bluetooth" } | Enable-NetAdapter -Confirm:$false -ErrorAction SilentlyContinue
 
 # Configure Ethernet Adapter for DHCP and disable IPv6
-. "$PSScriptRoot\network-dhcp.ps1"
+. "$ExeDir\util\network-dhcp.ps1"
 
 # Completely disable Windows Defender Firewall across all profiles
 Write-Host "[*] Disabling Windows Defender Firewall (Domain, Private, Public)..." -ForegroundColor Yellow
