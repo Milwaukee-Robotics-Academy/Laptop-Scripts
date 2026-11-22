@@ -9,6 +9,7 @@ $WingetApps = @(
     "Apple.Bonjour",                  # Bonjour / mDNS discovery
     "Python.Python.3.15",             # Python language
     "mjansen4857.pathplanner",        # Path Planner
+    "MechanicalAdvantage.AdvantageScope", # AdvantageScope (FRC developer dashboard for robot telemetry)
     "AgileBits.1Password",             # 1Password
     "Microsoft.PowerToys",            # MS PowerToys (FancyZones, Color Picker, etc. for FRC development)
     "Balena.Etcher",                   # Balena Etcher (USB imaging for Systemcore & VH-109 radios)
