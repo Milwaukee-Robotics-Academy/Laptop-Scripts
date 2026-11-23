@@ -1,3 +1,4 @@
+
 <#
 .SYNOPSIS
     Compiles all PowerShell scripts in the repository into standalone Windows executables (.exe).
@@ -15,8 +16,8 @@
     .\create-exes.ps1
 #>
 
-# Stop execution immediately if any command encounters an error
-$ErrorActionPreference = 'Stop'
+
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 
 # Verify that the PS2EXE module / cmdlet is installed and available in the current session
 if (-not (Get-Command Invoke-PS2EXE -ErrorAction SilentlyContinue)) {

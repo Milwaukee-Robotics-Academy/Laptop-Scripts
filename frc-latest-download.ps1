@@ -32,7 +32,7 @@ param (
 )
 
 # Stop execution immediately if a critical command fails
-$ErrorActionPreference = "Stop"
+# $ErrorActionPreference = "Stop"
 
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host " Starting Latest FRC Software Installer Download                 " -ForegroundColor Cyan

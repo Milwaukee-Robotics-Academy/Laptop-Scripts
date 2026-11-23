@@ -166,6 +166,7 @@ $extensions = @(
     "GitHub.copilot",            # GitHub Copilot AI code assistant (optional, if available)
     "GitHub.copilot-chat",       # GitHub Copilot AI code assistant (optional, if available)
     "Google.google-antigravity"  # Google Antigravity 
+)
     
 if ($codePath) {
     Write-Host "  -> Found VS Code CLI at: $codePath" -ForegroundColor Gray
