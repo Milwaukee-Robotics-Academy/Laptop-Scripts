@@ -13,7 +13,8 @@ $WingetApps = @(
     "AgileBits.1Password",             # 1Password
     "Microsoft.PowerToys",            # MS PowerToys (FancyZones, Color Picker, etc. for FRC development)
     "Balena.Etcher",                   # Balena Etcher (USB imaging for Systemcore & VH-109 radios)
-    "Microsoft.PowerShell"            # PowerShell 7.x (latest stable)
+    "Microsoft.PowerShell",            # PowerShell 7.x (latest stable)
+    "PlummersSoftwareLLC.TMOG"         # taskmanager replacement
 
 )
 
